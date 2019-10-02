@@ -1,0 +1,391 @@
+---
+title: "UO Survey of Health and Well-being (SHWell)"
+author: "Dani Cosme"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: show
+    highlight: tango
+    theme: united
+    toc: true
+    toc_float: 
+      collapsed: TRUE
+      smooth_scroll: TRUE
+    df_print: paged
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+# load libraries
+```{r, message=FALSE, warning=FALSE}
+if (!require(tidyverse)) {
+  install.packages('tidyverse')
+}
+
+if (!require(devtools)) {
+  install.packages('devtools')
+}
+
+if (!require(scorequaltrics)) {
+  devtools::install_github('jflournoy/qualtrics')
+}
+
+if (!require(knitr)) {
+  install.packages('knitr')
+}
+```
+
+# load aesthetic
+```{r}
+dc_bw = readRDS('~/dc_bw.Rds')
+```
+
+# define variables and paths
+```{r, echo = FALSE}
+cred_file_location = '~/credentials.yaml.DEFAULT'
+cols_to_keep = '(qid|id|Finished|StartDate|EndDate)'
+survey_name_filter = '^Aborn'
+sid_pattern = ''
+identifiableData = c('IPAddress') # exclude when printing duplicates
+output_file_dir = '~/Documents/code/dsnlab/FP_scripts/self_report/'
+rubric_dir = '/Users/danicosme/Dropbox (PfeiBer Lab)/FreshmanProject/FP_R21/ScoringRubrics/SVC_manuscript/'
+```
+
+
+# access qualtrics data
+Filter available surveys based on the filter specified above.  
+
+```{r, results = "hide", }
+# load credential file
+credentials = scorequaltrics::creds_from_file(cred_file_location)
+
+# filter
+surveysAvail = scorequaltrics::get_surveys(credentials)
+surveysFiltered = filter(surveysAvail, grepl(survey_name_filter, SurveyName))
+```
+
+# clean data
+## get survey data
+
+```{r getsurveydata, results = "hide", }
+# get data
+surveys = scorequaltrics::get_survey_data(surveysFiltered,
+                                               credentials, 
+                                               pid_col = cols_to_keep) %>%
+               filter(!item %in% identifiableData) #filter out identifiable data
+```
+
+## clean
+### Calculate duration and flag participants that haven't used substances (as they are expected to be faster and missing more items)
+```{r}
+surveys_dur = surveys %>%
+  mutate(StartDate = as.POSIXct(StartDate),
+         EndDate = as.POSIXct(EndDate),
+         duration = round(difftime(EndDate, StartDate, units = 'mins'), 1)) 
+
+surveys_sub = surveys_dur %>%
+  spread(item, value) %>%
+  mutate(alcohol = ifelse(ALCOHOL_YN == 1, "yes", "no"),
+         cannabis = ifelse(CANNABIS_YN == 1, "yes", "no")) %>%
+  gather(item, value, -c("StartDate", "EndDate", "Finished", "duration", "qid", "id", "survey_name", "alcohol", "cannabis"))
+```
+
+### Check incomplete surveys
+
+Manually checked, verified whether or not they appear to be good faith responses  
+
+Yes  
+* R_OkH6CrL8N62w72F  
+* R_1LGyUmjSMqK6gpy  
+* R_BR2k23E9qshJWGB  
+* R_3vEcKYUXQSSrVdf  
+* R_3R3h55GC4JtXcL7  
+* R_1DHDEKSfRS1s77A  
+* R_2cikmabDllsBn65  
+* R_2QRsrhdO1imAanj  
+* R_2TzsjF1Iauqatxs
+
+Probably not  
+* R_3G33cnkbTnbcTKU --> same response for all items in many survey measures  
+
+No  
+* everyone >98% missing  
+
+
+```{r}
+# filter out gated substance use questions for those who have never used those substances
+incomplete = surveys_sub %>%
+  filter(Finished == '0') %>%
+  filter(!(alcohol == "no" & grepl("DDQR|B-YAACQ", item)) & !(cannabis == "no" & grepl("DFAQ_CU|RMPI", item)))
+
+# check the percent missing and view responses manually
+incomplete %>%
+  mutate(missing = ifelse(value == "", 1, 0)) %>%
+  group_by(qid, Finished) %>%
+  summarize(n.missing = sum(missing, na.rm = TRUE),
+            n.total = n(),
+            percent.missing = (n.missing / n.total) * 100,
+            duration = mean(duration)) %>%
+  arrange(percent.missing)
+
+exclude_incomplete = incomplete %>%
+  mutate(missing = ifelse(value == "", 1, 0)) %>%
+  group_by(qid, Finished) %>%
+  summarize(n.missing = sum(missing, na.rm = TRUE),
+            n.total = n(),
+            percent.missing = (n.missing / n.total) * 100,
+            duration = mean(duration)) %>%
+  filter(percent.missing > 98)
+
+surveys_incomplete = surveys_sub %>%
+  filter(!qid %in% exclude_incomplete$qid)
+```
+N incomplete excluded from this step = `r length(unique(exclude_incomplete$qid))`
+
+### Check for very fast or slow responses  
+
+* exclude responses faster than 16 minutes  
+* excude responses longer than 48 hours  
+```{r}
+# all responses
+surveys_incomplete %>%
+  select(qid, duration, alcohol, cannabis) %>%
+  unique() %>%
+  mutate(substances = ifelse(alcohol == "no" & cannabis == "no", "0",
+                      ifelse(alcohol == "yes" & cannabis == "no", "1",
+                      ifelse(alcohol == "no" & cannabis == "yes", "1", "2")))) %>%
+  mutate(n = n(),
+         mean = mean(duration, na.rm = TRUE),
+         lowersd2 = mean - (2 * sd(duration, na.rm = TRUE))) %>%
+  ggplot(aes(duration, color = substances)) +
+    geom_freqpoly() +
+    dc_bw
+
+# responses < 120 mins
+plot.data = surveys_incomplete %>%
+  select(qid, duration, alcohol, cannabis) %>%
+  unique() %>%
+  mutate(substances = ifelse(alcohol == "no" & cannabis == "no", "0",
+                      ifelse(alcohol == "yes" & cannabis == "no", "1",
+                      ifelse(alcohol == "no" & cannabis == "yes", "1", "2")))) %>%
+  filter(duration < 100) %>%
+  mutate(n = n(),
+         mean = mean(duration, na.rm = TRUE),
+         lowersd2 = mean - (2 * sd(duration, na.rm = TRUE))) 
+
+plot.data %>%
+  ggplot(aes(duration, color = substances)) +
+    geom_freqpoly() +
+    geom_vline(aes(xintercept = mean)) +
+    geom_vline(aes(xintercept = lowersd2), linetype = "dotted") +
+    scale_x_continuous(breaks = seq(0, 100, 10)) +
+    dc_bw
+
+exclude_fast = surveys_incomplete %>%
+  select(qid, duration) %>%
+  unique() %>%
+  filter(duration < unique(plot.data$lowersd2))
+
+exclude_slow = surveys_incomplete %>%
+  select(qid, duration) %>%
+  unique() %>%
+  filter(duration > (60 * 24 * 2))
+
+surveys_time = surveys_incomplete %>%
+  filter(!qid %in% c(exclude_fast$qid, exclude_slow$qid))
+```
+N fast excluded from this step = `r length(unique(exclude_fast$qid))`
+
+N slow excluded from this step = `r length(unique(exclude_slow$qid))`
+
+### Check for response invariance for numeric responses
+
+* Included as flags of response quality: `sd_questionnaire` and `percent_survey_invariant`   
+* `sd_questionnaire` = standard deviation for each questionnaire  
+    * If questionnaire was not completed, `sd_questionnaire = NaN`  
+    * If questionnaire is a single item, `sd_questionnaire = NA`  
+* `percent_survey_invariant` = percent of the survey (across all questionnaires > 1 item completed) that have no variance (SD = 0)
+```{r}
+invariance = surveys_time %>%
+  mutate(questionnaire = gsub("\\d", "", item),
+         questionnaire = gsub("_", "", questionnaire),
+         questionnaire = gsub("FFMQR", "FFMQ", questionnaire),
+         value = as.numeric(value)) %>%
+  select(qid, questionnaire, value) %>%
+  group_by(qid, questionnaire) %>%
+  summarize(sd_questionnaire = sd(value, na.rm = TRUE)) %>%
+  group_by(qid) %>%
+  mutate(completed_variance = ifelse(!(is.na(sd_questionnaire) | is.nan(sd_questionnaire)), 1, 0),
+         n_questionnaires = sum(completed_variance, na.rm = TRUE),
+         invariant = ifelse(sd_questionnaire == 0, 1, 0),
+         sum_invariant = sum(invariant, na.rm = TRUE),
+         percent_survey_invariant = (sum_invariant / n_questionnaires ) * 100) %>%
+  select(qid, questionnaire, sd_questionnaire, percent_survey_invariant) %>%
+  ungroup()
+
+invariance %>%
+  select(qid, percent_survey_invariant) %>%
+  unique() %>%
+  mutate(mean = mean(percent_survey_invariant, na.rm = TRUE),
+         uppersd2 = mean + (2 * sd(percent_survey_invariant, na.rm = TRUE))) %>%
+  ggplot(aes(percent_survey_invariant)) +
+    geom_histogram(alpha = .5) +
+    geom_freqpoly() +
+    geom_vline(aes(xintercept = mean)) +
+    geom_vline(aes(xintercept = uppersd2), linetype = "dotted") +
+    scale_x_continuous(breaks = seq(0, 70, 10)) +
+    scale_y_continuous(breaks = seq(0, 120, 10)) +
+    dc_bw
+
+surveys_inv = surveys_time %>%
+  mutate(questionnaire = gsub("\\d", "", item),
+         questionnaire = gsub("_", "", questionnaire),
+         questionnaire = gsub("FFMQR", "FFMQ", questionnaire)) %>%
+  left_join(., invariance, by = c("qid", "questionnaire"))
+```
+
+### Check number of words written in free response questions
+* Included as a flag of response quality = `word_count_free_response` 
+* `word_count_free_response`= word count across all free response questions (6 total)  
+```{r}
+word_count = surveys_inv %>%
+  filter(grepl("HRB", item)) %>%
+  group_by(qid) %>%
+  mutate(value = tolower(value),
+         word_count = stringr::str_count(value, pattern = "\\w+")) %>%
+  select(qid, item, value, word_count) %>%
+  group_by(qid) %>%
+  summarize(word_count_free_response = sum(word_count, na.rm = TRUE))
+
+word_count %>%
+  mutate(mean = mean(word_count_free_response, na.rm = TRUE)) %>%
+  ggplot(aes(word_count_free_response)) +
+    geom_histogram(alpha = .5) +
+    geom_freqpoly() +
+    geom_vline(aes(xintercept = mean)) +
+    scale_x_continuous(breaks = seq(0, 700, 100)) +
+    scale_y_continuous(breaks = seq(0, 120, 10)) +
+    dc_bw
+
+surveys_word = surveys_inv %>%
+  left_join(., word_count, by = "qid")
+
+surveys_word %>% 
+  select(qid, percent_survey_invariant, word_count_free_response) %>% 
+  unique() %>% 
+  ggplot(aes(word_count_free_response, percent_survey_invariant)) + 
+    geom_point(alpha = .3) + 
+    geom_smooth() + 
+    dc_bw
+```
+
+### Check for duplicate responses
+
+* blank responses were recorded before ids were assigned; manually verified there are no duplicates on unique variables (e.g., height/weight) --> treat them as separate entries  
+```{r}
+surveys_word %>%
+  select(-c(questionnaire, sd_questionnaire, percent_survey_invariant)) %>%
+  spread(item, value) %>%
+  group_by(id) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n)) %>%
+  filter(n > 1) 
+```
+
+### Remove duplicate observations and assign new ids
+```{r}
+surveys_dup = surveys_word %>%
+  filter(!qid == "R_rdV3sZiAc89DHyx") %>% #finished response
+  filter(!qid == "R_1Qob0KWn8DrLehS") %>% #finished response
+  filter(!qid == "R_01IQWZONgCq6NyN") %>% #finished response
+  mutate(id = group_indices_(., .dots = "qid"))
+```
+N duplicates excluded from this step = `r length(unique(surveys_inv$qid)) - length(unique(surveys_dup$qid))`
+
+### Check for non-numeric items using the `get_uncoercibles()` function
+```{r}
+surveys_dup %>%
+  scorequaltrics::get_uncoercibles() %>%
+  distinct(item, value) %>%
+  arrange(item) %>%
+  select(item) %>%
+  unique()
+  
+surveys_dup %>%
+  scorequaltrics::get_uncoercibles() %>%
+  distinct(item, value) %>%
+  arrange(item) %>%
+  filter(!grepl("HRB", item))
+```
+
+## check manual entry numeric data
+
+* AGE, ALCOHOL_AGE, DDQR5-8, DFAQ_CU_17, DFAQ_CU_22-24, DFAQ_CU_27, DFAQ_CU_30  
+
+(this is still in progress)
+```{r}
+surveys_dup %>%
+  filter(item %in% c("AGE", "ALCOHOL_AGE", "DDQR_5", "DDQR_6", "DDQR_7", "DDQR_8", 
+                     "DFAQ_CU_17", "DFAQ_CU_22", "DFAQ_CU_23", "DFAQ_CU_24", "DFAQ_CU_27", "DFAQ_CU_30"))
+
+# check AGE
+surveys_dup %>%
+  select(qid, item, value) %>%
+  filter(item == "AGE") %>%
+  mutate(value = as.numeric(value)) %>%
+  arrange(desc(value))
+
+# check ALCOHOL_AGE
+surveys_dup %>%
+  select(qid, item, value) %>%
+  filter(item == "ALCOHOL_AGE") %>%
+  mutate(value = as.numeric(value)) %>%
+  arrange(desc(value))
+
+# check DDQR_5
+surveys_dup %>%
+  select(qid, item, value) %>%
+  filter(item == "DDQR_5") %>%
+  mutate(value = as.numeric(value)) %>%
+  arrange(desc(value))
+
+# check DDQR_6
+surveys_dup %>%
+  select(qid, item, value) %>%
+  filter(item == "DDQR_6") %>%
+  mutate(value = as.numeric(value)) %>%
+  arrange(desc(value))
+
+# check DDQR_7
+surveys_dup %>%
+  select(qid, item, value) %>%
+  filter(item == "DDQR_7") %>%
+  mutate(value = as.numeric(value)) %>%
+  arrange(desc(value))
+
+# check DDQR_8
+surveys_dup %>%
+  select(qid, item, value) %>%
+  filter(item == "DDQR_8") %>%
+  mutate(value = as.numeric(value)) %>%
+  arrange(desc(value))
+```
+
+### Tidy data
+
+* remove messed up surveys: planfulness  
+* remove unnecessary items and columns  
+* replace missing data with NA  
+```{r}
+surveys_clean = surveys_dup %>%
+  select(-c(survey_name, StartDate, EndDate)) %>%
+  filter(!grepl("PLAN_S|ExternalDataReference|intro|consent|debrief|ResponseSet|Status|Name", item)) %>%
+  mutate(value = ifelse(value == "", NA, value)) %>%
+  rename("finished" = Finished)
+```
+**Total N before exclusions (including incomplete and duplicate responses) = `r length(unique(surveys$qid))`**
+
+**Total N after exclusions = `r length(unique(surveys_clean$id))`**
