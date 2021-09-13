@@ -30,7 +30,7 @@ if (!require(devtools)) {
 }
 
 if (!require(scorequaltrics)) {
-  devtools::install_github('jflournoy/qualtrics')
+  devtools::install_github('dcosme/qualtrics', ref = "dev/")
 }
 
 if (!require(knitr)) {
@@ -40,18 +40,43 @@ if (!require(knitr)) {
 
 # load aesthetic
 ```{r}
-dc_bw = readRDS('~/dc_bw.Rds')
+dc_bw = theme_minimal() +
+  theme(legend.position = "top",
+        legend.text = element_text(size = 12),
+        text = element_text(size = 16, family = "Futura Medium"),
+        axis.text = element_text(color = "black"),
+        axis.line = element_line(colour = "black"),
+        axis.ticks.y = element_blank())
+```
+
+# generate credentials file
+To pull data from Qualtrics, you need a credentials file with an API token associated with your account. To create the file, follow these steps.
+
+1. Generate an API token for Qualtrics. Follow the steps outlined [here](https://www.qualtrics.com/support/integrations/api-integration/overview/)
+
+2. Create `qualtrics_credentials.yaml` in the `credentialDir` and add API token information
+
+```{bash}
+credentialDir='/Users/danicosme/' #replace with your path
+
+if [ ! -f ${credentialDir}qualtrics_credentials.yaml ]; then
+  cd ${credentialDir}
+  touch qualtrics_credentials.yaml
+  echo "token: Ik0XNN...." >> qualtrics_credentials.yaml #replace with your token information
+  echo "baseurl: oregon.qualtrics.com" >> qualtrics_credentials.yaml
+  echo "credential file created"
+else
+  echo "credential file already exists in this location"
+fi
 ```
 
 # define variables and paths
 ```{r, echo = FALSE}
-cred_file_location = '~/credentials.yaml.DEFAULT'
-cols_to_keep = '(qid|id|Finished|StartDate|EndDate)'
+cred_file_location = '~/qualtrics_credentials.yaml'
+ cols_to_keep = '(qid|id|Finished|StartDate|EndDate)'
 survey_name_filter = '^Aborn'
 sid_pattern = ''
 identifiableData = c('IPAddress') # exclude when printing duplicates
-output_file_dir = '~/Documents/code/dsnlab/FP_scripts/self_report/'
-rubric_dir = '/Users/danicosme/Dropbox (PfeiBer Lab)/FreshmanProject/FP_R21/ScoringRubrics/SVC_manuscript/'
 ```
 
 
@@ -385,6 +410,8 @@ surveys_clean = surveys_dup %>%
   filter(!grepl("PLAN_S|ExternalDataReference|intro|consent|debrief|ResponseSet|Status|Name", item)) %>%
   mutate(value = ifelse(value == "", NA, value)) %>%
   rename("finished" = Finished)
+
+write.csv(surveys_clean, "surveys_clean.csv", row.names = FALSE)
 ```
 **Total N before exclusions (including incomplete and duplicate responses) = `r length(unique(surveys$qid))`**
 
