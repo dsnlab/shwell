@@ -73,10 +73,11 @@ fi
 # define variables and paths
 ```{r, echo = FALSE}
 cred_file_location = '~/qualtrics_credentials.yaml'
- cols_to_keep = '(qid|id|Finished|StartDate|EndDate)'
+ cols_to_keep = '(ResponseId|id|Finished|StartDate|EndDate)'
 survey_name_filter = '^Aborn'
 sid_pattern = ''
 identifiableData = c('IPAddress') # exclude when printing duplicates
+rubric_dir = 'scoring_rubrics'
 ```
 
 
@@ -100,11 +101,13 @@ surveysFiltered = filter(surveysAvail, grepl(survey_name_filter, SurveyName))
 surveys = scorequaltrics::get_survey_data(surveysFiltered,
                                                credentials, 
                                                pid_col = cols_to_keep) %>%
-               filter(!item %in% identifiableData) #filter out identifiable data
+               filter(!item %in% identifiableData) %>% #filter out identifiable data
+  as_tibble() %>% #convert to tibble
+  filter(!grepl("_DO_", item))
 ```
 
 ## clean
-### Calculate duration and flag participants that haven't used substances (as they are expected to be faster and missing more items)
+### calculate duration and flag participants that haven't used substances (as they are expected to be faster and missing more items)
 ```{r}
 surveys_dur = surveys %>%
   mutate(StartDate = as.POSIXct(StartDate),
@@ -115,10 +118,10 @@ surveys_sub = surveys_dur %>%
   spread(item, value) %>%
   mutate(alcohol = ifelse(ALCOHOL_YN == 1, "yes", "no"),
          cannabis = ifelse(CANNABIS_YN == 1, "yes", "no")) %>%
-  gather(item, value, -c("StartDate", "EndDate", "Finished", "duration", "qid", "id", "survey_name", "alcohol", "cannabis"))
+  gather(item, value, -c("StartDate", "EndDate", "Finished", "duration", "ResponseId", "id", "survey_name", "alcohol", "cannabis"))
 ```
 
-### Check incomplete surveys
+### check incomplete surveys
 
 Manually checked, verified whether or not they appear to be good faith responses  
 
@@ -149,7 +152,7 @@ incomplete = surveys_sub %>%
 # check the percent missing and view responses manually
 incomplete %>%
   mutate(missing = ifelse(value == "", 1, 0)) %>%
-  group_by(qid, Finished) %>%
+  group_by(ResponseId, Finished) %>%
   summarize(n.missing = sum(missing, na.rm = TRUE),
             n.total = n(),
             percent.missing = (n.missing / n.total) * 100,
@@ -158,7 +161,7 @@ incomplete %>%
 
 exclude_incomplete = incomplete %>%
   mutate(missing = ifelse(value == "", 1, 0)) %>%
-  group_by(qid, Finished) %>%
+  group_by(ResponseId, Finished) %>%
   summarize(n.missing = sum(missing, na.rm = TRUE),
             n.total = n(),
             percent.missing = (n.missing / n.total) * 100,
@@ -166,18 +169,18 @@ exclude_incomplete = incomplete %>%
   filter(percent.missing > 98)
 
 surveys_incomplete = surveys_sub %>%
-  filter(!qid %in% exclude_incomplete$qid)
+  filter(!ResponseId %in% exclude_incomplete$ResponseId)
 ```
-N incomplete excluded from this step = `r length(unique(exclude_incomplete$qid))`
+N incomplete excluded from this step = `r length(unique(exclude_incomplete$ResponseId))`
 
-### Check for very fast or slow responses  
+### check for very fast or slow responses  
 
 * exclude responses faster than 16 minutes  
-* excude responses longer than 48 hours  
+* exclude responses longer than 48 hours  
 ```{r}
 # all responses
 surveys_incomplete %>%
-  select(qid, duration, alcohol, cannabis) %>%
+  select(ResponseId, duration, alcohol, cannabis) %>%
   unique() %>%
   mutate(substances = ifelse(alcohol == "no" & cannabis == "no", "0",
                       ifelse(alcohol == "yes" & cannabis == "no", "1",
@@ -190,8 +193,8 @@ surveys_incomplete %>%
     dc_bw
 
 # responses < 120 mins
-plot.data = surveys_incomplete %>%
-  select(qid, duration, alcohol, cannabis) %>%
+plot_data = surveys_incomplete %>%
+  select(ResponseId, duration, alcohol, cannabis) %>%
   unique() %>%
   mutate(substances = ifelse(alcohol == "no" & cannabis == "no", "0",
                       ifelse(alcohol == "yes" & cannabis == "no", "1",
@@ -201,7 +204,7 @@ plot.data = surveys_incomplete %>%
          mean = mean(duration, na.rm = TRUE),
          lowersd2 = mean - (2 * sd(duration, na.rm = TRUE))) 
 
-plot.data %>%
+plot_data %>%
   ggplot(aes(duration, color = substances)) +
     geom_freqpoly() +
     geom_vline(aes(xintercept = mean)) +
@@ -210,23 +213,23 @@ plot.data %>%
     dc_bw
 
 exclude_fast = surveys_incomplete %>%
-  select(qid, duration) %>%
+  select(ResponseId, duration) %>%
   unique() %>%
   filter(duration < unique(plot.data$lowersd2))
 
 exclude_slow = surveys_incomplete %>%
-  select(qid, duration) %>%
+  select(ResponseId, duration) %>%
   unique() %>%
   filter(duration > (60 * 24 * 2))
 
 surveys_time = surveys_incomplete %>%
-  filter(!qid %in% c(exclude_fast$qid, exclude_slow$qid))
+  filter(!ResponseId %in% c(exclude_fast$ResponseId, exclude_slow$ResponseId))
 ```
-N fast excluded from this step = `r length(unique(exclude_fast$qid))`
+N fast excluded from this step = `r length(unique(exclude_fast$ResponseId))`
 
-N slow excluded from this step = `r length(unique(exclude_slow$qid))`
+N slow excluded from this step = `r length(unique(exclude_slow$ResponseId))`
 
-### Check for response invariance for numeric responses
+### check for response invariance for numeric responses
 
 * Included as flags of response quality: `sd_questionnaire` and `percent_survey_invariant`   
 * `sd_questionnaire` = standard deviation for each questionnaire  
@@ -239,20 +242,20 @@ invariance = surveys_time %>%
          questionnaire = gsub("_", "", questionnaire),
          questionnaire = gsub("FFMQR", "FFMQ", questionnaire),
          value = as.numeric(value)) %>%
-  select(qid, questionnaire, value) %>%
-  group_by(qid, questionnaire) %>%
+  select(ResponseId, questionnaire, value) %>%
+  group_by(ResponseId, questionnaire) %>%
   summarize(sd_questionnaire = sd(value, na.rm = TRUE)) %>%
-  group_by(qid) %>%
+  group_by(ResponseId) %>%
   mutate(completed_variance = ifelse(!(is.na(sd_questionnaire) | is.nan(sd_questionnaire)), 1, 0),
          n_questionnaires = sum(completed_variance, na.rm = TRUE),
          invariant = ifelse(sd_questionnaire == 0, 1, 0),
          sum_invariant = sum(invariant, na.rm = TRUE),
          percent_survey_invariant = (sum_invariant / n_questionnaires ) * 100) %>%
-  select(qid, questionnaire, sd_questionnaire, percent_survey_invariant) %>%
+  select(ResponseId, questionnaire, sd_questionnaire, percent_survey_invariant) %>%
   ungroup()
 
 invariance %>%
-  select(qid, percent_survey_invariant) %>%
+  select(ResponseId, percent_survey_invariant) %>%
   unique() %>%
   mutate(mean = mean(percent_survey_invariant, na.rm = TRUE),
          uppersd2 = mean + (2 * sd(percent_survey_invariant, na.rm = TRUE))) %>%
@@ -269,20 +272,20 @@ surveys_inv = surveys_time %>%
   mutate(questionnaire = gsub("\\d", "", item),
          questionnaire = gsub("_", "", questionnaire),
          questionnaire = gsub("FFMQR", "FFMQ", questionnaire)) %>%
-  left_join(., invariance, by = c("qid", "questionnaire"))
+  left_join(., invariance, by = c("ResponseId", "questionnaire"))
 ```
 
-### Check number of words written in free response questions
+### check number of words written in free response questions
 * Included as a flag of response quality = `word_count_free_response` 
 * `word_count_free_response`= word count across all free response questions (6 total)  
 ```{r}
 word_count = surveys_inv %>%
   filter(grepl("HRB", item)) %>%
-  group_by(qid) %>%
+  group_by(ResponseId) %>%
   mutate(value = tolower(value),
          word_count = stringr::str_count(value, pattern = "\\w+")) %>%
-  select(qid, item, value, word_count) %>%
-  group_by(qid) %>%
+  select(ResponseId, item, value, word_count) %>%
+  group_by(ResponseId) %>%
   summarize(word_count_free_response = sum(word_count, na.rm = TRUE))
 
 word_count %>%
@@ -296,10 +299,10 @@ word_count %>%
     dc_bw
 
 surveys_word = surveys_inv %>%
-  left_join(., word_count, by = "qid")
+  left_join(., word_count, by = "ResponseId")
 
 surveys_word %>% 
-  select(qid, percent_survey_invariant, word_count_free_response) %>% 
+  select(ResponseId, percent_survey_invariant, word_count_free_response) %>% 
   unique() %>% 
   ggplot(aes(word_count_free_response, percent_survey_invariant)) + 
     geom_point(alpha = .3) + 
@@ -307,7 +310,7 @@ surveys_word %>%
     dc_bw
 ```
 
-### Check for duplicate responses
+### check for duplicate responses
 
 * blank responses were recorded before ids were assigned; manually verified there are no duplicates on unique variables (e.g., height/weight) --> treat them as separate entries  
 ```{r}
@@ -320,17 +323,17 @@ surveys_word %>%
   filter(n > 1) 
 ```
 
-### Remove duplicate observations and assign new ids
+### remove duplicate observations and assign new ids
 ```{r}
 surveys_dup = surveys_word %>%
-  filter(!qid == "R_rdV3sZiAc89DHyx") %>% #finished response
-  filter(!qid == "R_1Qob0KWn8DrLehS") %>% #finished response
-  filter(!qid == "R_01IQWZONgCq6NyN") %>% #finished response
-  mutate(id = group_indices_(., .dots = "qid"))
+  filter(!ResponseId == "R_rdV3sZiAc89DHyx") %>% #finished response
+  filter(!ResponseId == "R_1Qob0KWn8DrLehS") %>% #finished response
+  filter(!ResponseId == "R_01IQWZONgCq6NyN") %>% #finished response
+  mutate(id = group_indices_(., .dots = "ResponseId"))
 ```
-N duplicates excluded from this step = `r length(unique(surveys_inv$qid)) - length(unique(surveys_dup$qid))`
+N duplicates excluded from this step = `r length(unique(surveys_inv$ResponseId)) - length(unique(surveys_dup$ResponseId))`
 
-### Check for non-numeric items using the `get_uncoercibles()` function
+### check for non-numeric items using the `get_uncoercibles()` function
 ```{r}
 surveys_dup %>%
   scorequaltrics::get_uncoercibles() %>%
@@ -358,61 +361,195 @@ surveys_dup %>%
 
 # check AGE
 surveys_dup %>%
-  select(qid, item, value) %>%
+  select(ResponseId, item, value) %>%
   filter(item == "AGE") %>%
   mutate(value = as.numeric(value)) %>%
   arrange(desc(value))
 
 # check ALCOHOL_AGE
 surveys_dup %>%
-  select(qid, item, value) %>%
+  select(ResponseId, item, value) %>%
   filter(item == "ALCOHOL_AGE") %>%
   mutate(value = as.numeric(value)) %>%
   arrange(desc(value))
 
 # check DDQR_5
 surveys_dup %>%
-  select(qid, item, value) %>%
+  select(ResponseId, item, value) %>%
   filter(item == "DDQR_5") %>%
   mutate(value = as.numeric(value)) %>%
   arrange(desc(value))
 
 # check DDQR_6
 surveys_dup %>%
-  select(qid, item, value) %>%
+  select(ResponseId, item, value) %>%
   filter(item == "DDQR_6") %>%
   mutate(value = as.numeric(value)) %>%
   arrange(desc(value))
 
 # check DDQR_7
 surveys_dup %>%
-  select(qid, item, value) %>%
+  select(ResponseId, item, value) %>%
   filter(item == "DDQR_7") %>%
   mutate(value = as.numeric(value)) %>%
   arrange(desc(value))
 
 # check DDQR_8
 surveys_dup %>%
-  select(qid, item, value) %>%
+  select(ResponseId, item, value) %>%
   filter(item == "DDQR_8") %>%
   mutate(value = as.numeric(value)) %>%
   arrange(desc(value))
 ```
 
-### Tidy data
+### fix incorrect age responses
+* id 405 used years instead of ages
+
+```{r}
+surveys_age = surveys_dup %>%
+  mutate(value = ifelse(id == 405 & grepl("_AGE", item), 21 - (2018 - as.numeric(value)), value))
+
+```
+
+### tidy data
 
 * remove messed up surveys: planfulness  
 * remove unnecessary items and columns  
 * replace missing data with NA  
 ```{r}
-surveys_clean = surveys_dup %>%
+surveys_clean = surveys_age %>%
   select(-c(survey_name, StartDate, EndDate)) %>%
   filter(!grepl("PLAN_S|ExternalDataReference|intro|consent|debrief|ResponseSet|Status|Name", item)) %>%
   mutate(value = ifelse(value == "", NA, value)) %>%
-  rename("finished" = Finished)
-
-write.csv(surveys_clean, "surveys_clean.csv", row.names = FALSE)
+  rename("finished" = Finished) %>%
+  mutate(survey_name = "ABORN") %>%
+  select(id, item, value, survey_name)
 ```
-**Total N before exclusions (including incomplete and duplicate responses) = `r length(unique(surveys$qid))`**
+
+**Total N before exclusions (including incomplete and duplicate responses) = `r length(unique(surveys$ResponseId))`**
 
 **Total N after exclusions = `r length(unique(surveys_clean$id))`**
+
+# score
+## load scoring rubrics
+Scoring rubrics should exist in `rubric_dir` and be named according to the following convention: `[measure]_scoring_rubric.csv`
+
+```{r rubrics, results = "hide", message = FALSE, warning = FALSE}
+# specify rubric paths
+scoring_rubrics = data.frame(file = dir(file.path(rubric_dir), 
+                                        pattern = '.*scoring_rubric.*.csv',
+                                        full.names = TRUE))
+
+# read in rubrics
+scoring_data_long = scorequaltrics::get_rubrics(scoring_rubrics,
+                                                type = 'scoring')
+
+# print the first 10 rows
+head(scoring_data_long[, -1], 10)
+```
+
+## make manual changes prior to scoring
+
+* SRS
+  * This survey used a check box to denote >10, but this was inadvertently coded as NA
+  * Values determined to be >10 are recoded as 11
+  * Participants were reminded to complete the questions if they did not, so the amount of missing data is expected to be low
+  * The following logic was applied to determine whether the NA was a missed check box response or a true NA:
+    * `SRS_1` = All NAs are recoded to 11
+    * `SRS_3` = If SRS_1 (number of sexual partners in the past 30 days) > 0, recode to 11
+    * `SRS_4` = If SRS_1 (number of sexual partners in the past 30 days) > 0, recode to 11
+    * `SRS_5` = If SRS_1 (number of sexual partners in the past 30 days) > 0, recode to 11
+    * `SRS_7` = If SRS_1 (number of sexual partners in the past 30 days) > 0, recode to 11
+    * `SRS_8` = If any of the following items related to sexual intercourse in the past 30 days > 0, recode to 11
+    * `SRS_9` = If SRS_8 (number of sexual intercourse partners in the past 30 days) > 0, recode to 11
+    * `SRS_10` =  If SRS_8 (number of sexual intercourse partners in the past 30 days) > 0, recode to 11
+    * `SRS_16` =  If SRS_8 (number of sexual intercourse partners in the past 30 days) > 0, recode to 11
+    * `SRS_17` =  If SRS_8 (number of sexual intercourse partners in the past 30 days) > 0, recode to 11
+    * `SRS_18` =  If SRS_8 (number of sexual intercourse partners in the past 30 days) > 0, recode to 11
+    * `SRS_N` =  If SRS_8 (number of sexual intercourse partners in the past 30 days) > 0, recode to 11
+  
+```{r}
+srs = surveys_clean %>%
+  filter(grepl("SRS", item)) %>%
+  mutate(item = gsub("_1$|_4$", "", item))
+
+sex_no = srs %>% filter(item == "SRS_YN" & value == 0)
+sex_no_data = srs %>%
+  filter(id %in% sex_no$id) %>%
+  mutate(value = ifelse(grepl("AGE|_N|8|9|10|16|17|18", item), "missing", value))
+
+sex_no_data %>%
+  filter(is.na(value)) %>%
+  group_by(item) %>%
+  summarize(n_missing = n()) %>%
+  arrange(-n_missing)
+
+sex_yes = srs %>% filter(item == "SRS_YN" & value == 1)
+srs %>%
+  filter(id %in% sex_yes$id) %>%
+  filter(is.na(value)) %>%
+  group_by(item) %>%
+  summarize(n_missing = n()) %>%
+  arrange(-n_missing)
+
+sex_yes_data = srs %>%
+  filter(id %in% sex_yes$id) %>%
+  spread(item, value) %>%
+  select(survey_name, id, SRS_1, SRS_3, SRS_4, SRS_5, SRS_7,SRS_YN, SRS_AGE, SRS_N,
+         SRS_8, SRS_9, SRS_10, SRS_16, SRS_17, SRS_18) %>%
+  mutate(SRS_1 = ifelse(is.na(SRS_1), 11, SRS_1),
+         SRS_3 = ifelse(is.na(SRS_3) & SRS_1 > 0, 11, SRS_3),
+         SRS_4 = ifelse(is.na(SRS_4) & SRS_1 > 0, 11, SRS_4),
+         SRS_5 = ifelse(is.na(SRS_5) & SRS_1 > 0, 11, SRS_5),
+         SRS_7 = ifelse(is.na(SRS_7) & SRS_1 > 0, 11, SRS_7),
+         SRS_8 = ifelse(is.na(SRS_8) & (SRS_9 > 0 | SRS_10 > 0 | SRS_16 > 0 | SRS_17 > 0 | SRS_18 > 0), 11, SRS_8),
+         SRS_9 = ifelse(is.na(SRS_9) & SRS_8 > 0, 11, SRS_9),
+         SRS_10 = ifelse(is.na(SRS_10) & SRS_8 > 0, 11, SRS_10),
+         SRS_16 = ifelse(is.na(SRS_16) & SRS_8 > 0, 11, SRS_16),
+         SRS_17 = ifelse(is.na(SRS_17) & SRS_8 > 0, 11, SRS_17),
+         SRS_18 = ifelse(is.na(SRS_18) & SRS_8 > 0, 11, SRS_18),
+         SRS_N = ifelse(is.na(SRS_N) & SRS_8 > 0, 11, SRS_N)) %>%
+  gather(item, value, -id, -survey_name)
+
+srs_recode = bind_rows(sex_no_data, sex_yes_data)
+
+surveys_manual = surveys_clean %>%
+  filter(!grepl("SRS", item)) %>%
+  bind_rows(., srs_recode)
+
+write.csv(surveys_manual, "surveys_clean.csv", row.names = FALSE)
+```
+
+## score the cleaned data
+Get only the items used in the scoring rubrics
+```{r}
+scoring = scorequaltrics::get_items_in_rubric(surveys_manual, scoring_data_long)
+```
+
+Score the data
+
+* score the self-worth scale manually
+
+```{r}
+scored = scorequaltrics::score_questionnaire(scoring, scoring_data_long, SID = 'id', psych = FALSE)
+
+self_worth = scored %>% 
+  filter(scale_name == "PYD" & grepl("self", scored_scale)) %>% 
+  group_by(survey_name, scale_name, SID, n_items, n_missing, method) %>% 
+  summarize(scored_scale = "self_worth", 
+            score = mean(as.numeric(score), na.rm = TRUE))
+
+scored = scored %>%
+  filter(!grepl("self_worth", scored_scale)) %>%
+  ungroup() %>%
+  mutate(score = as.numeric(score)) %>%
+  bind_rows(., self_worth) %>%
+  mutate(scored_scale = gsub("_", " ", scored_scale),
+         score = ifelse(is.nan(score), NA, score)) 
+```
+
+## write csv
+```{r}
+write.csv(scored, "surveys_scored.csv", row.names = FALSE)
+```
+

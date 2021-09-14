@@ -1,0 +1,6 @@
+Data File Name,Scale Name,Column Name,Reverese,Transform,Min,Max,Mean,Gambling YN
+FP MRI T1,GQPN,GQPN_1,0,0,1,11,1,0
+FP MRI T1,GQPN,GQPN_2,0,0,1,10,1,0
+FP MRI T1,GQPN,GQPN_6,0,0,1,10,1,0
+FP MRI T1,GQPN,GQPN_9,0,0,1,10,1,0
+FP MRI T1,GQPN,GQPN_YN,0,0,0,1,0,1

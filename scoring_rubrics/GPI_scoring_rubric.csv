@@ -1,0 +1,12 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Sum
+FP MRI T1,GPI,GPI_1,0,1,5,0,sum
+FP MRI T1,GPI,GPI_2,0,1,5,0,sum
+FP MRI T1,GPI,GPI_3,0,1,5,0,sum
+FP MRI T1,GPI,GPI_4,0,1,5,0,sum
+FP MRI T1,GPI,GPI_5,0,1,5,0,sum
+FP MRI T1,GPI,GPI_7,0,1,5,0,sum
+FP MRI T1,GPI,GPI_9,0,1,5,0,sum
+FP MRI T1,GPI,GPI_12,0,1,5,0,sum
+FP MRI T1,GPI,GPI_13,0,1,5,0,sum
+FP MRI T1,GPI,GPI_16,0,1,5,0,sum
+FP MRI T1,GPI,GPI_20,0,1,5,0,sum

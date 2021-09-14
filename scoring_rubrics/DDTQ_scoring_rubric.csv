@@ -1,0 +1,13 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Tobacco,Powder Cocaine,Crack Cocaine,Stimulants,Meth,Ecstasy,Heroin,Opiates,Sedatives,Inhalants,Hallucinogens,sum,Similarity
+FP MRI T1,DDTQ,DDTQ_1,0,1,8,0,sum,0,0,0,0,0,0,0,0,0,0,sum,0
+FP MRI T1,DDTQ,DDTQ_3,0,1,8,0,0,sum,0,0,0,0,0,0,0,0,0,sum,0
+FP MRI T1,DDTQ,DDTQ_4,0,1,8,0,0,0,sum,0,0,0,0,0,0,0,0,sum,0
+FP MRI T1,DDTQ,DDTQ_5,0,1,8,0,0,0,0,sum,0,0,0,0,0,0,0,sum,0
+FP MRI T1,DDTQ,DDTQ_6,0,1,8,0,0,0,0,0,sum,0,0,0,0,0,0,sum,0
+FP MRI T1,DDTQ,DDTQ_7,0,1,8,0,0,0,0,0,0,sum,0,0,0,0,0,sum,0
+FP MRI T1,DDTQ,DDTQ_8,0,1,8,0,0,0,0,0,0,0,sum,0,0,0,0,sum,0
+FP MRI T1,DDTQ,DDTQ_10,0,1,8,0,0,0,0,0,0,0,0,sum,0,0,0,sum,0
+FP MRI T1,DDTQ,DDTQ_11,0,1,8,0,0,0,0,0,0,0,0,0,sum,0,0,sum,0
+FP MRI T1,DDTQ,DDTQ_13,0,1,8,0,0,0,0,0,0,0,0,0,0,sum,0,sum,0
+FP MRI T1,DDTQ,DDTQ_14,0,1,8,0,0,0,0,0,0,0,0,0,0,0,sum,sum,0
+FP MRI T1,DDTQ,SIMILARITY,0,1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1

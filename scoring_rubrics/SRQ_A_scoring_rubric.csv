@@ -1,0 +1,13 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,YN Control Alcohol,Autonomous Alcohol Regulation,Controlled Alcohol Regulation
+FP MRI T1,SRQ_A,SRQ_A_1,0,1,7,0,0,0,1
+FP MRI T1,SRQ_A,SRQ_A_2,0,1,7,0,0,1,0
+FP MRI T1,SRQ_A,SRQ_A_3,0,1,7,0,0,0,1
+FP MRI T1,SRQ_A,SRQ_A_4,0,1,7,0,0,0,1
+FP MRI T1,SRQ_A,SRQ_A_5,0,1,7,0,0,1,0
+FP MRI T1,SRQ_A,SRQ_A_6,0,1,7,0,0,0,1
+FP MRI T1,SRQ_A,SRQ_A_7,0,1,7,0,0,0,1
+FP MRI T1,SRQ_A,SRQ_A_8,0,1,7,0,0,1,0
+FP MRI T1,SRQ_A,SRQ_A_9,0,1,7,0,0,0,1
+FP MRI T1,SRQ_A,SRQ_A_10,0,1,7,0,0,1,0
+FP MRI T1,SRQ_A,SRQ_A_11,0,1,7,0,0,1,0
+FP MRI T1,SRQ_A,SRQ_A_12,0,1,7,0,1,0,0

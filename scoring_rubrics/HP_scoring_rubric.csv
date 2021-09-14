@@ -1,0 +1,9 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Mean
+FP MRI T1,HP,HP_1,0,1,4,0,1
+FP MRI T1,HP,HP_2,0,1,4,0,1
+FP MRI T1,HP,HP_3,0,1,4,0,1
+FP MRI T1,HP,HP_4,0,1,4,0,1
+FP MRI T1,HP,HP_5,0,1,4,0,1
+FP MRI T1,HP,HP_6,0,1,4,0,1
+FP MRI T1,HP,HP_7,0,1,4,0,1
+FP MRI T1,HP,HP_8,0,1,4,0,1

@@ -1,0 +1,7 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Mean
+FP MRI T1,PMS,PMS_1,0,1,5,0,1
+FP MRI T1,PMS,PMS_2,0,1,5,0,1
+FP MRI T1,PMS,PMS_3,0,1,5,0,1
+FP MRI T1,PMS,PMS_4,0,1,5,0,1
+FP MRI T1,PMS,PMS_5,0,1,5,0,1
+FP MRI T1,PMS,PMS_6,0,1,5,0,1

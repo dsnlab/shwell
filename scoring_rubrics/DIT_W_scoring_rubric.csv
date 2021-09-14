@@ -1,0 +1,4 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Mean
+FP MRI T1,DIT_W,DIT_W_1,1,1,6,0,1
+FP MRI T1,DIT_W,DIT_W_2,1,1,6,0,1
+FP MRI T1,DIT_W,DIT_W_3,1,1,6,0,1

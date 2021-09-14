@@ -1,0 +1,7 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Self-Worth 1,Self-Worth 2,Positive Identity
+FP MRI T1,PYD,PYD_1_A,0,0,2,0,sum,0,0
+FP MRI T1,PYD,PYD_1_B,0,1,2,0,sum,0,0
+FP MRI T1,PYD,PYD_2_A,0,0,2,0,0,sum,0
+FP MRI T1,PYD,PYD_2_B,0,1,2,0,0,sum,0
+FP MRI T1,PYD,PYD_3,0,1,5,0,0,,1
+FP MRI T1,PYD,PYD_4,0,1,5,0,0,,1

@@ -1,0 +1,9 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Sum,Difficulty
+FP MRI T1,GAD7,GAD7_1,0,0,3,0,sum,0
+FP MRI T1,GAD7,GAD7_2,0,0,3,0,sum,0
+FP MRI T1,GAD7,GAD7_3,0,0,3,0,sum,0
+FP MRI T1,GAD7,GAD7_4,0,0,3,0,sum,0
+FP MRI T1,GAD7,GAD7_5,0,0,3,0,sum,0
+FP MRI T1,GAD7,GAD7_6,0,0,3,0,sum,0
+FP MRI T1,GAD7,GAD7_7,0,0,3,0,sum,0
+FP MRI T1,GAD7,GAD7_8,0,1,4,0,0,1

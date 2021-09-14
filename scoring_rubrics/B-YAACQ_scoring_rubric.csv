@@ -1,0 +1,25 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Social,Impaired Control,Self Perception,Self Care,Risky Behaviors,Academic Occupational,Physiological Dependence,Blackout Drinking,Sum
+FP MRI T1,B-YAACQ,B-YAACQ_1,0,0,1,0,0,0,0,0,0,0,0,sum,sum
+FP MRI T1,B-YAACQ,B-YAACQ_2,0,0,1,0,0,0,0,0,sum,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_3,0,0,1,0,0,0,0,0,0,0,0,sum,sum
+FP MRI T1,B-YAACQ,B-YAACQ_4,0,0,1,0,0,0,0,0,,sum,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_5,0,0,1,0,0,0,0,sum,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_6,0,0,1,0,0,0,0,0,sum,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_7,0,0,1,0,0,sum,0,0,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_8,0,0,1,0,0,0,0,sum,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_9,0,0,1,0,sum,0,0,0,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_10,0,0,1,0,0,0,0,0,0,0,0,sum,sum
+FP MRI T1,B-YAACQ,B-YAACQ_11,0,0,1,0,0,0,0,0,0,sum,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_12,0,0,1,0,0,0,0,0,sum,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_13,0,0,1,0,0,0,0,sum,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_14,0,0,1,0,0,0,0,0,0,0,0,sum,sum
+FP MRI T1,B-YAACQ,B-YAACQ_15,0,0,1,0,0,sum,0,0,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_16,0,0,1,0,0,0,sum,0,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_17,0,0,1,0,sum,0,0,0,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_18,0,0,1,0,0,0,0,0,0,0,sum,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_19,0,0,1,0,0,0,0,0,sum,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_20,0,0,1,0,0,0,0,0,0,sum,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_21,0,0,1,0,0,sum,0,0,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_22,0,0,1,0,0,0,0,0,0,0,0,sum,sum
+FP MRI T1,B-YAACQ,B-YAACQ_23,0,0,1,0,sum,0,0,0,0,0,0,0,sum
+FP MRI T1,B-YAACQ,B-YAACQ_24,0,0,1,0,0,0,0,0,0,0,sum,0,sum

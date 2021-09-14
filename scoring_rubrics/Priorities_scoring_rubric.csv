@@ -1,0 +1,22 @@
+Data File Name ,Scale Name,Column Name,Reverse,Min,Max,Transform,Romantic relationships_w20,Romantic relationships_f20,Romantic relationships_w21,Romantic relationships,Family,Exercise,Well-being,Physical appearance,Health and Safety,Social exploration,Maintaining friendships,Community Service,Religion,Social awareness,New Experiences,Hobbies,Aesthetics,Self discovery,Academics,Other
+MRI T2 Check In ,PRIO,PRIO_1,0,1,17,0,,,,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_2,0,1,17,0,,,,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_3,0,1,17,0,,,,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_4,0,1,17,0,,,,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_5,0,1,17,0,,,,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_6,0,1,17,0,,,,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_7,0,1,17,0,,,,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_8,0,1,17,0,,,,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_9,0,1,17,0,,,,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_10,0,1,17,0,,,,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_11,0,1,17,0,,,,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_12,0,1,17,0,,,,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_13,0,1,17,0,,,,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0
+MRI T2 Check In ,PRIO,PRIO_14,0,1,17,0,,,,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0
+MRI T2 Check In ,PRIO,PRIO_15,0,1,17,0,,,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0
+MRI T2 Check In ,PRIO,PRIO_16,0,1,17,0,,,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+MRI T2 Check In ,PRIO,PRIO_17,0,1,17,0,,,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
+MRI T2 Check In ,PRIO,PRIO_17_TEXT,0,1,17,0,,,,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,I
+,,PRIO_w20_1,,,,,sum,,,,,,,,,,,,,,,,,,,
+,,PRIO_f20_1,,,,,,sum,,,,,,,,,,,,,,,,,,
+,,PRIO_w21_1,,,,,,,sum,,,,,,,,,,,,,,,,,

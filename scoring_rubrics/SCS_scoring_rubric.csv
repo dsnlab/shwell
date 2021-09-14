@@ -1,0 +1,14 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Mean
+FP MRI T2 Follow Up,SCS,SCS_1,0,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_2,1,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_3,1,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_4,1,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_5,1,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_6,0,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_7,1,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_8,0,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_9,1,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_10,1,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_11,0,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_12,1,1,5,0,1
+FP MRI T2 Follow Up,SCS,SCS_13,1,1,5,0,1

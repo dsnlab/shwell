@@ -1,0 +1,7 @@
+Data File Name,Scale Name,Column Name,Reverse,Transform,Min,Max,Positive Expectancy,Negative Expectancy
+FP MRI T1,MEEQ-B,MEEQ-B_1,0,0,1,5,0,1
+FP MRI T1,MEEQ-B,MEEQ-B_2,0,0,1,5,1,0
+FP MRI T1,MEEQ-B,MEEQ-B_3,0,0,1,5,1,0
+FP MRI T1,MEEQ-B,MEEQ-B_4,0,0,1,5,1,0
+FP MRI T1,MEEQ-B,MEEQ-B_5,0,0,1,5,0,1
+FP MRI T1,MEEQ-B,MEEQ-B_6,0,0,1,5,0,1

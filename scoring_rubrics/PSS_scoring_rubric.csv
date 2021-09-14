@@ -1,0 +1,11 @@
+﻿Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Sum
+FP MRI T1,PSS,PSS_1,0,0,4,0,sum
+FP MRI T1,PSS,PSS_2,0,0,4,0,sum
+FP MRI T1,PSS,PSS_3,0,0,4,0,sum
+FP MRI T1,PSS,PSS_4,1,0,4,0,sum
+FP MRI T1,PSS,PSS_5,1,0,4,0,sum
+FP MRI T1,PSS,PSS_6,0,0,4,0,sum
+FP MRI T1,PSS,PSS_7,1,0,4,0,sum
+FP MRI T1,PSS,PSS_8,1,0,4,0,sum
+FP MRI T1,PSS,PSS_9,0,0,4,0,sum
+FP MRI T1,PSS,PSS_10,0,0,4,0,sum

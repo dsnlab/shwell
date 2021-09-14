@@ -1,0 +1,12 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Drink per day Typical Week ,Hours drinking Typical Week,Drink per day Heaviest week,Hours drinking Heaviest Week,Most drinks,Hours drinking most drinks,sum,Alcohol YN,Age of First Drink,Height,Weight,Similarity
+FP MRI T1,DDQ-R,ALCOHOL_YN,,0,1,0,0,0,0,0,0,0,1,0,0,0,0
+FP MRI T1,DDQ-R,ALCOHOL_AGE,,,,0,0,0,0,0,0,0,0,I,0,0,0
+FP MRI T1,DDQ-R,DDQR_1,,,,sum,0,0,0,0,0,sum,0,0,0,0,0
+FP MRI T1,DDQ-R,DDQR_2,,,,0,sum,0,0,0,0,sum,0,0,0,0,0
+FP MRI T1,DDQ-R,DDQR_3,,,,0,0,sum,0,0,0,sum,0,0,0,0,0
+FP MRI T1,DDQ-R,DDQR_4,,,,0,0,0,sum,0,0,sum,0,0,0,0,0
+FP MRI T1,DDQ-R,DDQR_5,,,,0,0,0,0,sum,0,sum,0,0,0,0,0
+FP MRI T1,DDQ-R,DDQR_6,,,,0,0,0,0,0,sum,sum,0,0,0,0,0
+FP MRI T1,DDQ-R,DDQR_7,,,,0,0,0,0,0,0,0,0,0,I,0,0
+FP MRI T1,DDQ-R,DDQR_8,,,,0,0,0,0,0,0,0,0,0,0,I,0
+FP MRI T1,DDQ-R,SIMILARITY,,1,5,0,0,0,0,0,0,0,0,0,0,0,1

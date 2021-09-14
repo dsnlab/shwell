@@ -1,0 +1,10 @@
+Data File Name,Scale Name,Column Name,Reverse,Min,Max,Transform,Mean,Intelligence,Personality,Wellbeing
+FP MRI T1,DIT,DIT_I_1,1,1,6,0,1,1,0,0
+FP MRI T1,DIT,DIT_I_2,1,1,6,0,1,1,0,0
+FP MRI T1,DIT,DIT_I_3,1,1,6,0,1,1,0,0
+FP MRI T1,DIT,DIT_P_1,1,1,6,0,1,0,1,0
+FP MRI T1,DIT,DIT_P_2,1,1,6,0,1,0,1,0
+FP MRI T1,DIT,DIT_P_3,1,1,6,0,1,0,1,0
+FP MRI T1,DIT,DIT_W_1,1,1,6,0,1,0,0,1
+FP MRI T1,DIT,DIT_W_2,1,1,6,0,1,0,0,1
+FP MRI T1,DIT,DIT_W_3,1,1,6,0,1,0,0,1
